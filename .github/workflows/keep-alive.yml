@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping backend health endpoint
-        run: curl -sS -o /dev/null -w "backend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-api-7l5r.onrender.com/api/health/
+        run: |
+          curl -sS -o /dev/null -w "backend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-api-7l5r.onrender.com/api/health/
       - name: Ping frontend login page
-        run: curl -sS -o /dev/null -w "frontend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-v5jw.onrender.com/login
+        run: |
+          curl -sS -o /dev/null -w "frontend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-v5jw.onrender.com/login
