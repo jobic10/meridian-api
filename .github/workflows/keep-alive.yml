@@ -9,9 +9,30 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      # Self-expiring: this is only meant to cover a short testing window.
+      # Once the cutoff passes, every run becomes a no-op so it stops
+      # mattering (and stops being able to email about failures) without
+      # anyone needing to remember to disable it.
+      - name: Check expiry window
+        id: window
+        run: |
+          now=$(date -u +%s)
+          cutoff=$(date -u -d '2026-11-23T08:00:00Z' +%s)
+          if [ "$now" -gt "$cutoff" ]; then
+            echo "Past the testing window — skipping pings."
+            echo "active=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Ping backend health endpoint
+        if: steps.window.outputs.active == 'true'
+        continue-on-error: true
         run: |
           curl -sS -o /dev/null -w "backend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-api-7l5r.onrender.com/api/health/
+
       - name: Ping frontend login page
+        if: steps.window.outputs.active == 'true'
+        continue-on-error: true
         run: |
           curl -sS -o /dev/null -w "frontend: %{http_code}\n" --max-time 25 --retry 2 --retry-delay 5 https://meridian-v5jw.onrender.com/login
